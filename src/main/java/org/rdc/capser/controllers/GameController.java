@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RestController
-@RequestMapping("/caps")
+@RequestMapping("/")
 public class GameController {
 
     private DataService dataService;
@@ -44,7 +44,7 @@ public class GameController {
         dataService.savePlayersList(list);
     }
 
-    @GetMapping("/get/players")
+    @GetMapping
     public String getPlayers() throws FileNotFoundException {
 
         PlayerList list = dataService.getPlayersList();
