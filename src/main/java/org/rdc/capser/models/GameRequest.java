@@ -2,7 +2,6 @@ package org.rdc.capser.models;
 
 public class GameRequest {
 
-    private int playerId;
     private int opponentId;
     private GameType gameType;
     private int playerScore;
@@ -18,9 +17,6 @@ public class GameRequest {
         this.playerScore = playerScore;
     }
 
-    public void setPlayerId(int playerId) {
-        this.playerId = playerId;
-    }
 
     public void setOpponentScore(int opponentScore) {
         this.opponentScore = opponentScore;
@@ -50,9 +46,6 @@ public class GameRequest {
         return opponentScore;
     }
 
-    public int getPlayerId() {
-        return playerId;
-    }
 
     public int getOpponentId() {
         return opponentId;
