@@ -21,8 +21,8 @@ import java.util.stream.Stream;
 @Service
 public class DataService {
 
-    private final String PLAYERS_LIST_PATH = "D:/ServerData/players.txt";
-    private final String GAMES_LIST_PATH = "D:/ServerData/games.txt";
+    private final String PLAYERS_LIST_PATH = "D:/ServerDataDev/players.txt";
+    private final String GAMES_LIST_PATH = "D:/ServerDataDev/games.txt";
 
     public PlayerList getPlayersList() throws FileNotFoundException {
 
@@ -112,4 +112,24 @@ public class DataService {
         }
         return null;
     }
+
+    public List<Game> getPlayerGames(int playerId) {
+        try {
+            GamesList list = getGamesList();
+            List<Game> result = new ArrayList<>();
+            List<Game> data = list.getData();
+            for (Game game : data) {
+                if (game.getPlayerId() == playerId || game.getOpponentId() == playerId) {
+                    result.add(game);
+                }
+            }
+
+            return result;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 }

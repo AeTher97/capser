@@ -3,6 +3,6 @@ package org.rdc.capser.config;
 public class Config {
 
     public static float getBuildNumber() {
-        return Float.parseFloat("1.05");
+        return Float.parseFloat("1.06");
     }
 }

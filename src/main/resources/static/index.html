@@ -1,0 +1,70 @@
+<html>
+<body>
+<p id="players">Loading...</p>
+<br>
+<form action="stats.html">
+    <input type="submit" value="Log In">
+</form>
+
+<form action="games.html">
+    <input type="submit" value="View Game History">
+</form>
+
+<form action="gamePost.html">
+    <input type="submit" value="Log a game">
+</form>
+
+<br><pre><p id="buildNumber"></p></pre>
+
+<script>var data = null;
+
+var xhr = new XMLHttpRequest();
+xhr.withCredentials = true;
+
+xhr.addEventListener("readystatechange", function () {
+    if (this.readyState === 4) {
+        console.log(this.responseText);
+        document.getElementById("players").innerHTML = this.responseText;
+    }
+});
+
+xhr.open("GET", "http://localhost:8888/players");
+xhr.setRequestHeader("User-Agent", "PostmanRuntime/7.15.0");
+xhr.setRequestHeader("Accept", "*/*");
+xhr.setRequestHeader("Cache-Control", "no-cache");
+xhr.setRequestHeader("Postman-Token", "261bb4e1-ce3c-42c6-9a4a-2a2cbb387aaf,d09d24ad-be63-47b3-94e2-0a3f79aca57a");
+xhr.setRequestHeader("Host", "localhost:8888");
+xhr.setRequestHeader("accept-encoding", "gzip, deflate");
+xhr.setRequestHeader("Connection", "keep-alive");
+xhr.setRequestHeader("cache-control", "no-cache");
+
+xhr.send(data);
+
+var xhr2 = new XMLHttpRequest();
+xhr2.withCredentials = true;
+
+xhr2.addEventListener("readystatechange", function () {
+    if (this.readyState === 4) {
+        console.log(this.responseText);
+        document.getElementById("buildNumber").innerHTML = this.responseText;
+    }
+});
+
+xhr2.open("GET", "http://localhost:8888/version");
+xhr2.setRequestHeader("User-Agent", "PostmanRuntime/7.15.0");
+xhr2.setRequestHeader("Accept", "*/*");
+xhr2.setRequestHeader("Cache-Control", "no-cache");
+xhr2.setRequestHeader("Postman-Token", "261bb4e1-ce3c-42c6-9a4a-2a2cbb387aaf,d09d24ad-be63-47b3-94e2-0a3f79aca57a");
+xhr2.setRequestHeader("Host", "localhost:8888");
+xhr2.setRequestHeader("accept-encoding", "gzip, deflate");
+xhr2.setRequestHeader("Connection", "keep-alive");
+xhr2.setRequestHeader("cache-control", "no-cache");
+
+xhr2.send(data);
+
+
+
+
+</script>
+</body>
+</html>
