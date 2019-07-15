@@ -3,10 +3,7 @@ package org.rdc.capser.services;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.apache.tomcat.jni.File;
-import org.rdc.capser.models.Game;
-import org.rdc.capser.models.GamesList;
-import org.rdc.capser.models.Player;
-import org.rdc.capser.models.PlayerList;
+import org.rdc.capser.models.*;
 import org.springframework.stereotype.Service;
 
 import javax.swing.*;
@@ -21,8 +18,10 @@ import java.util.stream.Stream;
 @Service
 public class DataService {
 
-    private final String PLAYERS_LIST_PATH = "D:/ServerDataDev/players.txt";
-    private final String GAMES_LIST_PATH = "D:/ServerDataDev/games.txt";
+    private final String PLAYERS_LIST_PATH = "D:/ServerData/players.txt";
+    private final String GAMES_LIST_PATH = "D:/ServerData/games.txt";
+    private final String CREDS_PATH = "D:/ServerData/creds.txt";
+
 
     public PlayerList getPlayersList() throws FileNotFoundException {
 
@@ -85,6 +84,25 @@ public class DataService {
         Gson gson = new Gson();
         out.print(gson.toJson(gamesList));
         out.close();
+    }
+
+    public void addUser(RegisterRequest registerRequest, int id){
+        try {
+            Gson gson = new Gson();
+            JsonReader reader2 = new JsonReader(new FileReader(CREDS_PATH));
+
+            CredsList result = gson.fromJson(reader2, CredsList.class);
+            reader2.close();
+            result.getData().add(new Creds(id,registerRequest.getPassword()));
+
+            PrintWriter out = new PrintWriter(CREDS_PATH);
+            out.print(gson.toJson(result));
+            out.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
     }
 
     public String getPlayerName(int id) {

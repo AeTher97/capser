@@ -33,13 +33,15 @@ public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
                 .antMatchers("/players").permitAll()
                 .antMatchers("/games").permitAll()
                 .antMatchers("/version").permitAll()
+                .antMatchers("/register.html").permitAll()
+                .antMatchers("/register").permitAll()
                 .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
                 .and().httpBasic();
 
     }
 
-    private final String CREDS_PATH = "D:/ServerDataDev/creds.txt";
+    private final String CREDS_PATH = "D:/ServerData/creds.txt";
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder authentication)

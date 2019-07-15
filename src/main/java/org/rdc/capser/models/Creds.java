@@ -5,6 +5,11 @@ public class Creds {
     private int id;
     private String password;
 
+    public Creds(int id, String password) {
+        this.id = id;
+        this.password = password;
+    }
+
     public void setId(int id) {
         this.id = id;
     }

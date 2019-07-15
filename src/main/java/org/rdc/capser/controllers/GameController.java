@@ -1,13 +1,19 @@
 package org.rdc.capser.controllers;
 
+import org.rdc.capser.Capser;
 import org.rdc.capser.config.Config;
 import org.rdc.capser.models.*;
+import org.rdc.capser.security.CustomWebSecurityConfigurerAdapter;
 import org.rdc.capser.services.DataService;
 import org.rdc.capser.utilities.EloRating;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
+import java.security.Security;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,8 +30,8 @@ public class GameController {
         this.dataService = dataService;
     }
 
-    @GetMapping("/register")
-    public void addPlayer(@RequestParam("name") String name) throws FileNotFoundException {
+    @PostMapping("/register")
+    public String addPlayer(@ModelAttribute RegisterRequest registerRequest) throws FileNotFoundException {
 
         PlayerList list = dataService.getPlayersList();
         List<Player> data = list.getData();
@@ -38,11 +44,23 @@ public class GameController {
         }
 
         maxId++;
+        if (registerRequest.getPassword().equals(registerRequest.getRepeatPassword())) {
+            dataService.addUser(registerRequest, maxId);
+        } else {
+            return "Password are not matching. <form action=\"register.html\">\n" +
+                    "    <input type=\"submit\" value=\"Try again\">\n" +
+                    "</form>\n";
+        }
 
         // #TODO move to config
-        list.getData().add(new Player(maxId, name, 500));
+        list.getData().add(new Player(maxId, registerRequest.getUsername(), 500));
         list.setNumberOfPlayers(list.getData().size());
         dataService.savePlayersList(list);
+        Capser.restart();
+
+        return "Player registered successfully. <form action=\"index.html\">\n" +
+                "    <input type=\"submit\" value=\"Go back\">\n" +
+                "</form>\n";
     }
 
     @GetMapping("/players")
