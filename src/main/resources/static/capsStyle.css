@@ -19,8 +19,7 @@ input[type=text]:focus input[type=password]:focus {
 
 form {
     position: relative;
-    left: 5%;
-    width: 90%;
+    width: 1400px;
     border-width: 3px;
     border-color: #4287f5;
 }
@@ -109,8 +108,7 @@ div button {
 
 .parent {
     position: relative;
-    width: 80%;
-    left: 10%;
+    width: 1300px
 }
 
 .version_left, .version_right {
@@ -120,7 +118,7 @@ div button {
 }
 
 .version_left {
-    left: 0;
+    left: 5%;
     margin-left: -15px;
 }
 .version_right {

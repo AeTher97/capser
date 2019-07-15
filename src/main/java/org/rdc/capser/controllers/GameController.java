@@ -6,6 +6,7 @@ import org.rdc.capser.models.*;
 import org.rdc.capser.security.CustomWebSecurityConfigurerAdapter;
 import org.rdc.capser.services.DataService;
 import org.rdc.capser.utilities.EloRating;
+import org.rdc.capser.utilities.ErrorForm;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -47,9 +48,7 @@ public class GameController {
         if (registerRequest.getPassword().equals(registerRequest.getRepeatPassword())) {
             dataService.addUser(registerRequest, maxId);
         } else {
-            return "Password are not matching. <form action=\"register.html\">\n" +
-                    "    <input type=\"submit\" value=\"Try again\">\n" +
-                    "</form>\n";
+            return ErrorForm.errorForm("Passwords are not matching", "register.html");
         }
 
         // #TODO move to config
@@ -58,9 +57,7 @@ public class GameController {
         dataService.savePlayersList(list);
         Capser.restart();
 
-        return "Player registered successfully. <form action=\"index.html\">\n" +
-                "    <input type=\"submit\" value=\"Go back\">\n" +
-                "</form>\n";
+        return ErrorForm.successForm("Player registered successfully");
     }
 
     @GetMapping("/players")
@@ -108,15 +105,11 @@ public class GameController {
         }
 
         if (opponentScore == playerScore) {
-            return "Game cannot end with a draw. <form action=\"gamePost.html\">\n" +
-                    "    <input type=\"submit\" value=\"Go back\" />\n" +
-                    "</form>";
+            return ErrorForm.errorForm("Game cannot end in a draw", "/gamePost.html");
         }
 
         if (opponentScore < 11 && playerScore < 11) {
-            return "Game cannot end with less than 11 points. <form action=\"amePost.html\">\n" +
-                    "    <input type=\"submit\" value=\"Go back\" />\n" +
-                    "</form>";
+            return ErrorForm.errorForm("Game must end with one of the players obtaining 11 points", "/gamePost.html");
         }
 
         GamesList list = dataService.getGamesList();
@@ -130,13 +123,9 @@ public class GameController {
         }
 
         if (gameType == GameType.OVERTIME && Math.abs(opponentScore - playerScore) != 2) {
-            return "Overtime game must finish with 2 points advantage. <form action=\"gamePost.html\">\n" +
-                    "    <input type=\"submit\" value=\"Go back\" />\n" +
-                    "</form>";
+            return ErrorForm.errorForm("Overtime game must finish with 2 points advantage", "/gamePost.html");
         } else if (gameType == GameType.SUDDEN_DEATH && (opponentScore != 11 && playerScore != 11)) {
-            return "Sudden death game must finish with 11 points. <form action=\"gamePost.html\">\n" +
-                    "    <input type=\"submit\" value=\"Go back\" />\n" +
-                    "</form>";
+            return ErrorForm.errorForm("Sudden death game must finish with 11 points", "/gamePost.html");
         }
         int winner;
 
@@ -174,9 +163,7 @@ public class GameController {
             }
         }
         dataService.savePlayersList(listToModify);
-        return "Game saved successfully <form action=\"index.html\">\n" +
-                "    <input type=\"submit\" value=\"Go to homepage\" />\n" +
-                "</form>";
+        return ErrorForm.successForm("Game saved successfully");
 
     }
 
@@ -249,11 +236,15 @@ public class GameController {
             Player player = dataService.findPlayerById(Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName()));
 
             StringBuilder transformedData = new StringBuilder();
-            transformedData.append("<pre>Player Statistics<br>");
-            transformedData.append("<pre>Name: " + player.getName() + "       Id: " + player.getId() + "    Points: " + player.getPoints());
-            transformedData.append("<pre>Average Rebuttals: " + player.getAverageRebottles() + "<br>");
-            transformedData.append("<pre>Games Played: " + player.getGamesPlayed() + "     Wins: " + player.getGamesWon() + "     Loses: " + player.getGamesLost());
-            transformedData.append("<pre>Win/Loss Ratio: " + player.getWinLossRatio());
+            transformedData.append("<div><pre><h3>Player Statistics</h3></div>");
+            transformedData.append("<div><pre>Name                                " + player.getName() + "</div>");
+            transformedData.append("<div><pre>Id                                  " + player.getId() + "</div>");
+            transformedData.append("<div><pre>Points                              " + player.getPoints() + "</div>");
+            transformedData.append("<div><pre>Games played                        " + player.getGamesPlayed() + "</div>");
+            transformedData.append("<div><pre>Games won                           " + player.getGamesWon() + "</div>");
+            transformedData.append("<div><pre>Games lost                          " + player.getGamesLost() + "</div>");
+            transformedData.append("<div><pre>Win/Loss Ratio                      " + player.getWinLossRatio() + "</div>");
+            transformedData.append("<div><pre><Average Rebuttals:                 " + player.getAverageRebottles() + "</div>");
 
             return transformedData.toString();
         } catch (FileNotFoundException e) {

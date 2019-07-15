@@ -18,9 +18,9 @@ import java.util.stream.Stream;
 @Service
 public class DataService {
 
-    private final String PLAYERS_LIST_PATH = "D:/ServerData/players.txt";
-    private final String GAMES_LIST_PATH = "D:/ServerData/games.txt";
-    private final String CREDS_PATH = "D:/ServerData/creds.txt";
+    private final String PLAYERS_LIST_PATH = "D:/ServerDataDev/players.txt";
+    private final String GAMES_LIST_PATH = "D:/ServerDataDev/games.txt";
+    private final String CREDS_PATH = "D:/ServerDataDev/creds.txt";
 
 
     public PlayerList getPlayersList() throws FileNotFoundException {
