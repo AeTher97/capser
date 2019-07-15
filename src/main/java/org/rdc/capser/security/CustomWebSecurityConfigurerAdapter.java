@@ -35,6 +35,7 @@ public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
                 .antMatchers("/version").permitAll()
                 .antMatchers("/register.html").permitAll()
                 .antMatchers("/register").permitAll()
+                .antMatchers("/capsStyle.css").permitAll()
                 .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
                 .and().httpBasic();

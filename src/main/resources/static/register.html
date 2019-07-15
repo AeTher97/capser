@@ -1,9 +1,15 @@
 <html>
+<head>
+    <link rel="stylesheet" type="text/css" href="capsStyle.css">
+</head>
 <body>
 <form action="/register" method="post">
     <div>
+        <h2>Register new user</h2>
+    </div>
+    <div>
         <label for="username">Name</label>
-        <input name="username" id="username">
+        <input type="text" name="username" id="username">
     </div>
     <div>
         <label for="password">Password</label>
@@ -16,9 +22,12 @@
     <div>
         <button>Register</button>
     </div>
+
 </form>
 <form action="index.html">
-    <input type="submit" value="Go back">
+    <div>
+        <button>Go back</button>
+    </div>
 </form>
 </body>
 </html>

@@ -73,9 +73,9 @@ public class GameController {
         StringBuilder transformedData = new StringBuilder();
         int standing = 1;
 
-        transformedData.append("<pre>Standing       Id       Name                            Points \n<br>");
+        transformedData.append("<div id=\"top_line\"><h3><pre>Standing       Id       Name                            Points \n</pre></h3></div>");
         for (Player player : data) {
-            transformedData.append(String.format("<pre>%-3d            %-3d      %-30s  %5f \n<br>"
+            transformedData.append(String.format("<div><pre>%-3d               %-3d       %-30s        %5f \n</div>"
                     , standing, player.getId(), player.getName(), player.getPoints()));
             standing++;
         }
@@ -216,12 +216,12 @@ public class GameController {
 
         StringBuilder transformedData = new StringBuilder();
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        transformedData.append("<pre>Players                                Score        Sinks      Rebuttals     Winner          Game Type        Game Time\n <br>");
+        transformedData.append("<div id=\"games_top\"><pre>Players                                Score        Sinks      Rebuttals     Winner          Game Type        Game Time\n </div><pre>");
 
         for (Game game : data) {
             String playerName = dataService.getPlayerName(game.getPlayerId());
             String opponent = dataService.getPlayerName(game.getOpponentId());
-            transformedData.append(String.format("%-15s vs %15s     %-2d : %2d      %-2d : %2d    %-2d : %2d       %-15s %-12s   %30s \n" + "<br>",
+            transformedData.append(String.format("<div><pre>%-15s vs %15s     %-2d : %2d      %-2d : %2d    %-2d : %2d       %-15s %-12s   %30s \n" + "</pre></div>",
                     dataService.getPlayerName(game.getPlayerId()),
                     dataService.getPlayerName(game.getOpponentId()),
                     game.getPlayerScore(),
@@ -240,7 +240,7 @@ public class GameController {
 
     @GetMapping("/version")
     public String getVersion() {
-        return "Capser build " + Config.getBuildNumber() + "                   Made with love by Mike";
+        return "<div class=\"version_left\">   Capser build " + Config.getBuildNumber() + "</div><div class=\"version_right\">Made with love by Mike   </div>";
     }
 
     @GetMapping("/stats")

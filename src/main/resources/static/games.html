@@ -1,12 +1,19 @@
 <html>
+<head>
+    <link rel="stylesheet" type="text/css" href="capsStyle.css">
+</head>
 <body>
-<p id="games">Loading...</p>
+<form>
+    <div id="games">Loading...</div>
+</form>
 <br>
 <form action="index.html">
-    <input type="submit" value="Go back">
+    <div>
+        <button>Go back</button>
+    </div>
 </form>
 
-<br><pre><p id="buildNumber"></p></pre>
+<div id="buildNumber" class="parent"></div>
 
 <script>var data = null;
 
@@ -53,8 +60,6 @@ xhr2.setRequestHeader("Connection", "keep-alive");
 xhr2.setRequestHeader("cache-control", "no-cache");
 
 xhr2.send(data);
-
-
 
 
 </script>
