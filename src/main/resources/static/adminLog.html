@@ -1,0 +1,52 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="capsStyle.css">
+</head>
+<body>
+<form action="/log" method="post" id="game_post_form">
+    <div>
+        <h2>Post a new game</h2>
+    </div>
+    <div>
+        <label for="playerId">PlayerId Id</label>
+        <input type="text" name="playerId" id="playerId">
+    </div>
+    <div>
+        <label for="opponentId">Opponent Id</label>
+        <input type="text" name="opponentId" id="opponentId">
+    </div>
+    <div>
+        <label for="playerScore">Your Score</label>
+        <input type="text" name="playerScore" id="playerScore">
+    </div>
+    <div>
+        <label for="opponentScore">Opponent Score</label>
+        <input type="text" name="opponentScore" id="opponentScore">
+    </div>
+    <div>
+        <label for="playerSinks">Your Sinks</label>
+        <input type="text" name="playerSinks" id="playerSinks">
+    </div>
+    <div>
+        <label for="opponentSinks">Opponent Sinks</label>
+        <input type="text" name="opponentSinks" id="opponentSinks">
+    </div>
+    <div>
+        <label>Game Type</label>
+        <select name="GameType">
+            <option value="SUDDEN_DEATH">Sudden Death</option>
+            <option value="OVERTIME">Overtime</option>
+        </select>
+    </div>
+    <div>
+        <button>Post a game</button>
+    </div>
+</form>
+
+<form action="index.html" id="go_back_form">
+    <div>
+        <button>Go back</button>
+    </div>
+</form>
+</body>
+</html>

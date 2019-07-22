@@ -22,9 +22,9 @@ import java.util.stream.Stream;
 public class DataService {
 
     private final String EXTENSION = ".txt";
-    private final String PLAYERS_LIST_PATH = "D:/ServerDataDev/players";
-    private final String GAMES_LIST_PATH = "D:/ServerDataDev/games.txt";
-    private final String CREDS_PATH = "D:/ServerDataDev/creds.txt";
+    private final String PLAYERS_LIST_PATH = "D:/ServerData/players";
+    private final String GAMES_LIST_PATH = "D:/ServerData/games.txt";
+    private final String CREDS_PATH = "D:/ServerData/creds.txt";
 
 
     public PlayerList getPlayersList() throws FileNotFoundException {

@@ -25,6 +25,12 @@ public class Game  implements Comparable<Game>{
         this.gameDate = new Date();
         this.playerRebottles = getOpponentSinks() - opponentScore;
         this.opponentRebottles = getPlayerSinks() - playerScore;
+        if (this.playerRebottles < 0) {
+            this.playerRebottles = 0;
+        }
+        if (this.opponentRebottles < 0) {
+            this.opponentRebottles = 0;
+        }
     }
 
     private Date gameDate;
