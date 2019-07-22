@@ -42,7 +42,7 @@ public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
 
     }
 
-    private final String CREDS_PATH = "D:/ServerData/creds.txt";
+    private final String CREDS_PATH = "D:/ServerDataDev/creds.txt";
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder authentication)

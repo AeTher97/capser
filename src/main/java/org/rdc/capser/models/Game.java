@@ -4,7 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Game {
+public class Game  implements Comparable<Game>{
 
     public Game(int playerId,
                 int opponentId,
@@ -115,5 +115,15 @@ public class Game {
 
     public void setWinner(int winner) {
         this.winner = winner;
+    }
+
+    @Override
+    public int compareTo(Game u) {
+        if(u.getGameDate().toInstant().toEpochMilli() > this.getGameDate().toInstant().toEpochMilli())
+        {
+            return 1;
+        }else{
+            return -1;
+        }
     }
 }

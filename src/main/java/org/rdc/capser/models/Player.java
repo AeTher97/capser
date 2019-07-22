@@ -10,6 +10,11 @@ public class Player implements Comparable<Player> {
     private int gamesWon;
     private int gamesLost;
     private float winLossRatio;
+    private int totalPointsMade;
+    private int totalPointsLost;
+    private int totalSinksMade;
+    private int totalSinksLost;
+    private float sinksMadeToLostRatio;
 
 
 
@@ -83,5 +88,53 @@ public class Player implements Comparable<Player> {
         }else{
             return -1;
         }
+    }
+
+    public int getTotalPointsLost() {
+        return totalPointsLost;
+    }
+
+    public int getTotalPointsMade() {
+        return totalPointsMade;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getTotalSinksLost() {
+        return totalSinksLost;
+    }
+
+    public int getTotalSinksMade() {
+        return totalSinksMade;
+    }
+
+    public void setTotalPointsLost(int totalPointsLost) {
+        this.totalPointsLost = totalPointsLost;
+    }
+
+    public void setTotalPointsMade(int totalPointsMade) {
+        this.totalPointsMade = totalPointsMade;
+    }
+
+    public void setTotalSinksLost(int totalSinksLost) {
+        this.totalSinksLost = totalSinksLost;
+    }
+
+    public void setTotalSinksMade(int totalSinksMade) {
+        this.totalSinksMade = totalSinksMade;
+    }
+
+    public float getSinksMadeToLostRatio() {
+        return sinksMadeToLostRatio;
+    }
+
+    public void setSinksMadeToLostRatio(float sinksMadeToLostRatio) {
+        this.sinksMadeToLostRatio = sinksMadeToLostRatio;
     }
 }
