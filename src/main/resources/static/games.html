@@ -6,16 +6,52 @@
 <form>
     <div id="games">Loading...</div>
 </form>
+
+<form action="games.html" id="filter_form">
+    <div>
+        <h3>Filter</h3>
+    </div>
+    <div>
+        <label for="id">Player id</label>
+        <input type="text" name="id" id="id">
+    </div>
+    <div>
+        <label>Sort By</label>
+        <select name="GameType">
+            <option value="SORT_BY">Sort By</option>
+            <option value="SCORE">Score</option>
+            <option value="REBUTTALS">Rebuttals</option>
+        </select>
+    </div>
+    <div>
+        <button>Filter</button>
+    </div>
+</form>
+<br>
+
 <br>
 <form action="index.html">
     <div>
         <button>Go back</button>
     </div>
 </form>
-
+<br>
 <div id="buildNumber" class="parent"></div>
 
 <script>var data = null;
+
+function findGetParameter(parameterName) {
+    var result = null,
+        tmp = [];
+    location.search
+        .substr(1)
+        .split("&")
+        .forEach(function (item) {
+            tmp = item.split("=");
+            if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        });
+    return result;
+}
 
 var xhr = new XMLHttpRequest();
 xhr.withCredentials = true;
@@ -27,7 +63,12 @@ xhr.addEventListener("readystatechange", function () {
     }
 });
 
-xhr.open("GET", "/games");
+if (findGetParameter("id") != null) {
+    xhr.open("GET", "/games" + "?id=" + findGetParameter("id"));
+} else {
+    xhr.open("GET", "/games");
+
+}
 xhr.setRequestHeader("User-Agent", "PostmanRuntime/7.15.0");
 xhr.setRequestHeader("Accept", "*/*");
 xhr.setRequestHeader("Cache-Control", "no-cache");

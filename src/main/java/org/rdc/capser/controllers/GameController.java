@@ -6,6 +6,7 @@ import org.rdc.capser.models.*;
 import org.rdc.capser.services.DataService;
 import org.rdc.capser.utilities.EloRating;
 import org.rdc.capser.utilities.ErrorForm;
+import org.rdc.capser.utilities.utilMethods;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/")
@@ -62,6 +64,9 @@ public class GameController {
         PlayerList list = dataService.getPlayersList();
         List<Player> data = list.getData();
         Collections.sort(data);
+        data = data.stream().filter(i -> utilMethods.determineTimeWithoutAGame(dataService.getPlayerGames(i.getId())) < Config.getInactivityTime()
+                && i.getGamesPlayed()+1 > Config.getPlacementMatchesNumber()).collect(Collectors.toList());
+
 
         StringBuilder transformedData = new StringBuilder();
         int standing = 1;
@@ -69,7 +74,7 @@ public class GameController {
         transformedData.append("<div id=\"top_line\"><h3><pre>Standing       Id       Name                            Points \n</pre></h3></div>");
         for (Player player : data) {
             transformedData.append(String.format("<div><pre>%-3d               %-3d       %-30s        %5f \n</div>"
-                    , standing, player.getId(), player.getName(), player.getPoints()));
+                    , standing, player.getId(), player.getName(), player.getPoints()).replace(",","."));
             standing++;
         }
 
@@ -85,6 +90,9 @@ public class GameController {
         int opponentScore = gameRequest.getOpponentScore();
         int playerSinks = gameRequest.getPlayerSinks();
         int opponentSinks = gameRequest.getOpponentSinks();
+
+        dataService.makePlayersListBackup(dataService.getPlayersList());
+
 
         if (playerId > opponentId) {
             int tempId = playerId;
@@ -168,7 +176,17 @@ public class GameController {
         float averageRebottles = 0;
         int gamesWon = 0;
         int gamesLost = 0;
+        int totalPointsMade = 0;
+        int totalPointsLost = 0;
+        int totalSinksMade = 0;
+        int totalSinksLost = 0;
+
         for (Game game : games) {
+            totalPointsMade += game.getPlayerScore();
+            totalPointsLost += game.getOpponentScore();
+            totalSinksMade += game.getPlayerSinks();
+            totalSinksLost += game.getOpponentSinks();
+
             if (game.getPlayerId() == player.getId()) {
                 averageRebottles += game.getPlayerRebottles();
             } else {
@@ -180,19 +198,41 @@ public class GameController {
                 gamesLost++;
             }
         }
-        float winLossRatio = gamesWon / gamesLost;
+        if (gamesLost != 0) {
+            float winLossRatio = new Float(gamesWon) / new Float(gamesLost);
+            player.setWinLossRatio(winLossRatio);
+
+        } else {
+            float winLossRatio = gamesWon;
+            player.setWinLossRatio(winLossRatio);
+
+        }
+
+        if (totalSinksLost != 0) {
+            float sinksMadeToLost = new Float(totalSinksMade) / new Float(totalPointsLost);
+            player.setSinksMadeToLostRatio(sinksMadeToLost);
+
+        } else {
+            float winLossRatio = gamesWon;
+            player.setSinksMadeToLostRatio(totalSinksMade);
+
+        }
 
         averageRebottles = averageRebottles / games.size();
         player.setAverageRebottles(averageRebottles);
         player.setGamesWon(gamesWon);
-        player.setWinLossRatio(winLossRatio);
         player.setGamesLost(gamesLost);
         player.setGamesPlayed(games.size());
+        player.setTotalPointsLost(totalPointsLost);
+        player.setTotalPointsMade(totalPointsMade);
+        player.setTotalSinksLost(totalSinksLost);
+        player.setTotalSinksMade(totalSinksMade);
+
     }
 
 
     @GetMapping("/games")
-    public String getGames() throws FileNotFoundException {
+    public String getGames(@RequestParam(required = false) Integer id, @RequestParam(required = false) SortType sortBy) throws FileNotFoundException {
 
         GamesList list = dataService.getGamesList();
         List<Game> data = list.getData();
@@ -200,8 +240,15 @@ public class GameController {
         StringBuilder transformedData = new StringBuilder();
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         transformedData.append("<div id=\"games_top\"><pre>Players                                Score        Sinks      Rebuttals     Winner          Game Type        Game Time\n </div><pre>");
+        Collections.sort(data);
 
         for (Game game : data) {
+            if(id != null)
+            {
+                if(game.getPlayerId() != id && game.getOpponentId() != id){
+                    continue;
+                }
+            }
             String playerName = dataService.getPlayerName(game.getPlayerId());
             String opponent = dataService.getPlayerName(game.getOpponentId());
             transformedData.append(String.format("<div><pre>%-15s vs %15s     %-2d : %2d      %-2d : %2d    %-2d : %2d       %-15s %-12s   %30s \n" + "</pre></div>",
@@ -234,7 +281,7 @@ public class GameController {
                             SecurityContextHolder.getContext().getAuthentication().getName() : id));
 
             StringBuilder transformedData = new StringBuilder();
-            transformedData.append("<div><pre><h3>Player Statistics</h3></div>");
+            transformedData.append("<div id=\"statistics_top\"><pre><h3>Player Statistics</h3></div>");
             transformedData.append("<div><pre>Name                                " + player.getName() + "</div>");
             transformedData.append("<div><pre>Id                                  " + player.getId() + "</div>");
             transformedData.append("<div><pre>Points                              " + player.getPoints() + "</div>");
@@ -242,7 +289,13 @@ public class GameController {
             transformedData.append("<div><pre>Games won                           " + player.getGamesWon() + "</div>");
             transformedData.append("<div><pre>Games lost                          " + player.getGamesLost() + "</div>");
             transformedData.append("<div><pre>Win/Loss Ratio                      " + player.getWinLossRatio() + "</div>");
-            transformedData.append("<div><pre><Average Rebuttals:                 " + player.getAverageRebottles() + "</div>");
+            transformedData.append("<div><pre>Average Rebuttals:                  " + player.getAverageRebottles() + "</div>");
+            transformedData.append("<div><pre>Total points made:                  " + player.getTotalPointsMade() + "</div>");
+            transformedData.append("<div><pre>Total points lost:                  " + player.getTotalPointsLost() + "</div>");
+            transformedData.append("<div><pre>Total sinks made:                   " + player.getTotalSinksMade() + "</div>");
+            transformedData.append("<div><pre>Total sinks lost:                   " + player.getTotalSinksLost() + "</div>");
+            transformedData.append("<div><pre>Sinks made to lost ratio:           " + player.getSinksMadeToLostRatio() + "</div>");
+
 
             return transformedData.toString();
         } catch (FileNotFoundException e) {

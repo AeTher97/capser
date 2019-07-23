@@ -9,22 +9,28 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.*;
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class DataService {
 
-    private final String PLAYERS_LIST_PATH = "D:/ServerDataDev/players.txt";
-    private final String GAMES_LIST_PATH = "D:/ServerDataDev/games.txt";
-    private final String CREDS_PATH = "D:/ServerDataDev/creds.txt";
+    private final String EXTENSION = ".txt";
+    private final String PLAYERS_LIST_PATH = "D:/ServerData/players";
+    private final String GAMES_LIST_PATH = "D:/ServerData/games.txt";
+    private final String CREDS_PATH = "D:/ServerData/creds.txt";
 
 
     public PlayerList getPlayersList() throws FileNotFoundException {
 
         try {
             Gson gson = new Gson();
-            JsonReader reader = new JsonReader(new FileReader(PLAYERS_LIST_PATH));
+            JsonReader reader = new JsonReader(new FileReader(PLAYERS_LIST_PATH + EXTENSION));
             if (gson.fromJson(reader, PlayerList.class) == null) {
                 PlayerList playerList = new PlayerList();
                 playerList.setData(new ArrayList<Player>());
@@ -33,7 +39,7 @@ public class DataService {
             }
 
             reader.close();
-            JsonReader reader2 = new JsonReader(new FileReader(PLAYERS_LIST_PATH));
+            JsonReader reader2 = new JsonReader(new FileReader(PLAYERS_LIST_PATH + EXTENSION));
 
             PlayerList result = gson.fromJson(reader2, PlayerList.class);
             reader2.close();
@@ -46,11 +52,29 @@ public class DataService {
 
     public void savePlayersList(PlayerList playerList) throws FileNotFoundException {
 
-        PrintWriter out = new PrintWriter(PLAYERS_LIST_PATH);
+        PrintWriter out = new PrintWriter(PLAYERS_LIST_PATH + EXTENSION);
         Gson gson = new Gson();
         out.print(gson.toJson(playerList));
         out.close();
+
     }
+
+    public void makePlayersListBackup(PlayerList playerList) throws FileNotFoundException {
+        try {
+            DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
+            java.io.File file = new File((PLAYERS_LIST_PATH + "Backup_" + dateFormat.format(Date.from(Instant.now())) + EXTENSION));
+            boolean success = file.createNewFile();
+            if (success) {
+                PrintWriter out = new PrintWriter(PLAYERS_LIST_PATH + "Backup_" + dateFormat.format(Date.from(Instant.now())) + EXTENSION);
+                Gson gson = new Gson();
+                out.print(gson.toJson(playerList));
+                out.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public GamesList getGamesList() throws FileNotFoundException {
         try {
@@ -60,6 +84,7 @@ public class DataService {
                 GamesList gamesList = new GamesList();
                 gamesList.setData(new ArrayList<Game>());
                 gamesList.setNumberOfGames(0);
+                reader.close();
                 return gamesList;
             }
             reader.close();
@@ -83,14 +108,14 @@ public class DataService {
         out.close();
     }
 
-    public void addUser(RegisterRequest registerRequest, int id){
+    public void addUser(RegisterRequest registerRequest, int id) {
         try {
             Gson gson = new Gson();
             JsonReader reader2 = new JsonReader(new FileReader(CREDS_PATH));
 
             CredsList result = gson.fromJson(reader2, CredsList.class);
             reader2.close();
-            result.getData().add(new Creds(id,registerRequest.getPassword()));
+            result.getData().add(new Creds(id, registerRequest.getPassword()));
 
             PrintWriter out = new PrintWriter(CREDS_PATH);
             out.print(gson.toJson(result));
