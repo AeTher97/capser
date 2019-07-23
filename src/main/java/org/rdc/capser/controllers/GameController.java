@@ -3,18 +3,14 @@ package org.rdc.capser.controllers;
 import org.rdc.capser.Capser;
 import org.rdc.capser.config.Config;
 import org.rdc.capser.models.*;
-import org.rdc.capser.security.CustomWebSecurityConfigurerAdapter;
 import org.rdc.capser.services.DataService;
 import org.rdc.capser.utilities.EloRating;
 import org.rdc.capser.utilities.ErrorForm;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
-import java.security.Security;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -231,9 +227,11 @@ public class GameController {
     }
 
     @GetMapping("/stats")
-    public String getPlayerStats() {
+    public String getPlayerStats(@RequestParam(required = false, name = "id") String id) {
         try {
-            Player player = dataService.findPlayerById(Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName()));
+            Player player = dataService.findPlayerById(
+                    Integer.parseInt(StringUtils.isEmpty(id) ?
+                            SecurityContextHolder.getContext().getAuthentication().getName() : id));
 
             StringBuilder transformedData = new StringBuilder();
             transformedData.append("<div><pre><h3>Player Statistics</h3></div>");

@@ -2,18 +2,15 @@ package org.rdc.capser.services;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import org.apache.tomcat.jni.File;
 import org.rdc.capser.models.*;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 public class DataService {
