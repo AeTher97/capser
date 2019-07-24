@@ -7,6 +7,15 @@
     <div id="stats">Loading...</div>
 </form>
 <br>
+<form action="stats.html" method="get">
+    <div>
+        <label for="id">Player ID</label>
+        <input type="text" name="id" id="id">
+    </div>
+    <div>
+        <button>Find player stats</button>
+    </div>
+</form>
 <form action="index.html">
     <div>
         <button>Go back</button>
@@ -28,7 +37,18 @@ xhr.addEventListener("readystatechange", function () {
     }
 });
 
-xhr.open("GET", "/stats");
+try {
+    var id = new URL(window.location.href).searchParams.get("id");
+} catch (err) {
+    console.log("Error while getting search param.");
+}
+
+if (id) {
+    xhr.open("GET", "/stats" + "?id=" + id);
+} else {
+    xhr.open("GET", "/stats");
+}
+
 xhr.setRequestHeader("User-Agent", "PostmanRuntime/7.15.0");
 xhr.setRequestHeader("Accept", "*/*");
 xhr.setRequestHeader("Cache-Control", "no-cache");

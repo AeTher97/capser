@@ -54,8 +54,11 @@ public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
             CredsList result = gson.fromJson(reader2, CredsList.class);
             reader2.close();
 
-            for (Creds creds : result.getData()) {
-                authentication.inMemoryAuthentication().withUser(String.valueOf(creds.getId())).password("{noop}" + creds.getPassword()).authorities("USER");
+
+            if (result != null) {
+                for (Creds creds : result.getData()) {
+                    authentication.inMemoryAuthentication().withUser(String.valueOf(creds.getId())).password("{noop}" + creds.getPassword()).authorities("USER");
+                }
             }
 
         } catch (IOException e) {

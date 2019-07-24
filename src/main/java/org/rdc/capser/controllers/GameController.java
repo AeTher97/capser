@@ -8,6 +8,7 @@ import org.rdc.capser.utilities.EloRating;
 import org.rdc.capser.utilities.ErrorForm;
 import org.rdc.capser.utilities.utilMethods;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
@@ -273,9 +274,11 @@ public class GameController {
     }
 
     @GetMapping("/stats")
-    public String getPlayerStats() {
+    public String getPlayerStats(@RequestParam(required = false, name = "id") String id) {
         try {
-            Player player = dataService.findPlayerById(Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName()));
+            Player player = dataService.findPlayerById(
+                    Integer.parseInt(StringUtils.isEmpty(id) ?
+                            SecurityContextHolder.getContext().getAuthentication().getName() : id));
 
             StringBuilder transformedData = new StringBuilder();
             transformedData.append("<div id=\"statistics_top\"><pre><h3>Player Statistics</h3></div>");
