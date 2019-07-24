@@ -3,23 +3,17 @@ package org.rdc.capser.controllers;
 import org.rdc.capser.Capser;
 import org.rdc.capser.config.Config;
 import org.rdc.capser.models.*;
-import org.rdc.capser.security.CustomWebSecurityConfigurerAdapter;
 import org.rdc.capser.services.DataService;
 import org.rdc.capser.utilities.EloRating;
 import org.rdc.capser.utilities.ErrorForm;
 import org.rdc.capser.utilities.utilMethods;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
-import java.security.Security;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -307,4 +301,20 @@ public class GameController {
         return null;
     }
 
+    @GetMapping("/playerIdsAndNames")
+    public String getPlayerIdsAndNames(){
+        try {
+            PlayerList playerList = dataService.getPlayersList();
+            StringBuilder data = new StringBuilder();
+            data.append("<select name=\"opponentId\">");
+            playerList.getData().stream()
+                    .forEach(p -> data.append("<option value=\"" + p.getId() + "\">" + p.getName() + "</option>"));
+            data.append("</select>");
+
+            return data.toString();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return "Error retrieving players";
+        }
+    }
 }

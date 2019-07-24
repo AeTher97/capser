@@ -5,18 +5,13 @@ import com.google.gson.stream.JsonReader;
 import org.rdc.capser.models.*;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 public class DataService {
