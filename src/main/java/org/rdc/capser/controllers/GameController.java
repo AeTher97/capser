@@ -304,4 +304,20 @@ public class GameController {
         return null;
     }
 
+    @GetMapping("/playerIdsAndNames")
+    public String getPlayerIdsAndNames(){
+        try {
+            PlayerList playerList = dataService.getPlayersList();
+            StringBuilder data = new StringBuilder();
+            data.append("<select name=\"opponentId\">");
+            playerList.getData().stream()
+                    .forEach(p -> data.append("<option value=\"" + p.getId() + "\">" + p.getName() + "</option>"));
+            data.append("</select>");
+
+            return data.toString();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return "Error retrieving players";
+        }
+    }
 }
