@@ -11,6 +11,6 @@ public class Config {
     }
 
     public static float getBuildNumber() {
-        return Float.parseFloat("1.09");
+        return Float.parseFloat("1.10");
     }
 }

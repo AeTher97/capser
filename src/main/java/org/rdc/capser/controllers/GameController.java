@@ -209,11 +209,10 @@ public class GameController {
         }
 
         if (totalSinksLost != 0) {
-            float sinksMadeToLost = new Float(totalSinksMade) / new Float(totalPointsLost);
+            float sinksMadeToLost = new Float(totalSinksMade) / new Float(totalSinksLost);
             player.setSinksMadeToLostRatio(sinksMadeToLost);
 
         } else {
-            float winLossRatio = gamesWon;
             player.setSinksMadeToLostRatio(totalSinksMade);
 
         }
