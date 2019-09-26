@@ -64,8 +64,7 @@ public class GameController {
         PlayerList list = dataService.getPlayersList();
         List<Player> data = list.getData();
         Collections.sort(data);
-        data = data.stream().filter(i -> utilMethods.determineTimeWithoutAGame(dataService.getPlayerGames(i.getId())) < Config.getInactivityTime()
-                && i.getGamesPlayed()+1 > Config.getPlacementMatchesNumber()).collect(Collectors.toList());
+        data = data.stream().filter(i -> i.getGamesPlayed()+1 > Config.getPlacementMatchesNumber()).collect(Collectors.toList());
 
 
         StringBuilder transformedData = new StringBuilder();
@@ -304,11 +303,24 @@ public class GameController {
     }
 
     @GetMapping("/playerIdsAndNames")
-    public String getPlayerIdsAndNames(){
+    public String getPlayerIdsAndNames(@RequestParam(required = false) String type){
         try {
+            if(type!=null && type.equals("id")){
+                PlayerList playerList = dataService.getPlayersList();
+                StringBuilder data = new StringBuilder();
+                data.append("<select name=\"id\">");
+                data.append("<option value=\"0\">Select</option>");
+                playerList.getData().stream()
+                        .forEach(p -> data.append("<option value=\"" + p.getId() + "\">" + p.getName() + "</option>"));
+                data.append("</select>");
+
+                return data.toString();
+            }
             PlayerList playerList = dataService.getPlayersList();
             StringBuilder data = new StringBuilder();
             data.append("<select name=\"opponentId\">");
+            data.append("<option value=\"0\">Select</option>");
+
             playerList.getData().stream()
                     .forEach(p -> data.append("<option value=\"" + p.getId() + "\">" + p.getName() + "</option>"));
             data.append("</select>");

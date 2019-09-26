@@ -8,7 +8,9 @@ import org.rdc.capser.models.Game;
 import org.rdc.capser.models.GamesList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,6 +18,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -36,9 +41,9 @@ public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
                 .antMatchers("/register.html").permitAll()
                 .antMatchers("/register").permitAll()
                 .antMatchers("/capsStyle.css").permitAll()
+                .antMatchers("/commandments.html").permitAll()
                 .antMatchers("/").permitAll()
-                .anyRequest().authenticated()
-                .and().httpBasic();
+                .anyRequest().authenticated().and().httpBasic();
 
     }
 
@@ -73,4 +78,7 @@ public class CustomWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
 }
+

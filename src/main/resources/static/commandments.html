@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="capsStyle.css">
+    <meta charset="UTF-8">
+    <title>10 Commandments</title>
+</head>
+<body>
+
+<form>
+    <div id="commandments"><h3>10 Commandments of a good caps player</h3></div>
+    <div>
+        1. A good caps player can hit any target.
+    </div>
+    <div>
+        2. A good caps player can play on any side.
+    </div>
+    <div>
+        3. A good caps player can play in any venue.
+    </div>
+    <div>
+        4. A good caps player plays better when drunk.
+    </div>
+    <div>
+        5. A good caps player rebuttles.
+    </div>
+    <div>
+        6. A good caps player is not afraid of drinking beer.
+    </div>
+    <div>
+        7. A good caps player celebrates after scoring.
+    </div>
+    <div>
+        8. A good caps player is a gentleman.
+    </div>
+    <div>
+        9. A good caps player loves the game of caps.
+    </div>
+    <div>
+        10. This is a game of caps we play with 3 beers.
+
+    </div>
+</form>
+<br>
+
+<form action="index.html">
+    <div>
+        <button>Go back</button>
+    </div>
+</form>
+<br>
+<div id="buildNumber" class="parent"></div>
+
+<script>
+    var data = null;
+    var xhr2 = new XMLHttpRequest();
+    xhr2.withCredentials = true;
+
+    xhr2.addEventListener("readystatechange", function () {
+        if (this.readyState === 4) {
+            console.log(this.responseText);
+            document.getElementById("buildNumber").innerHTML = this.responseText;
+        }
+    });
+
+    xhr2.open("GET", "/version");
+    xhr2.setRequestHeader("User-Agent", "PostmanRuntime/7.15.0");
+    xhr2.setRequestHeader("Accept", "*/*");
+    xhr2.setRequestHeader("Cache-Control", "no-cache");
+    xhr2.setRequestHeader("Postman-Token", "261bb4e1-ce3c-42c6-9a4a-2a2cbb387aaf,d09d24ad-be63-47b3-94e2-0a3f79aca57a");
+    xhr2.setRequestHeader("Host", "localhost:8888");
+    xhr2.setRequestHeader("accept-encoding", "gzip, deflate");
+    xhr2.setRequestHeader("Connection", "keep-alive");
+    xhr2.setRequestHeader("cache-control", "no-cache");
+
+    xhr2.send(data);
+
+</script>
+</body>
+</html>
