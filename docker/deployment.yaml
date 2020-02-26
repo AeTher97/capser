@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: capser
+  labels:
+    name: capser
+spec:
+  containers:
+    - name: capser
+      image: capser
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 8888

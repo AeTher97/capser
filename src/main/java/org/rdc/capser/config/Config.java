@@ -11,6 +11,10 @@ public class Config {
     }
 
     public static float getBuildNumber() {
-        return Float.parseFloat("1.11");
+        return Float.parseFloat("1.12");
+    }
+
+    public static boolean cloud() {
+        return true;
     }
 }

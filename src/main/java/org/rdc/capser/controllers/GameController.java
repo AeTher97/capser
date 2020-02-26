@@ -1,14 +1,11 @@
 package org.rdc.capser.controllers;
 
-import org.rdc.capser.Capser;
 import org.rdc.capser.config.Config;
 import org.rdc.capser.models.*;
 import org.rdc.capser.services.DataService;
 import org.rdc.capser.utilities.EloRating;
 import org.rdc.capser.utilities.ErrorForm;
-import org.rdc.capser.utilities.utilMethods;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
@@ -30,50 +27,36 @@ public class GameController {
     }
 
     @PostMapping("/register")
-    public String addPlayer(@ModelAttribute RegisterRequest registerRequest) throws FileNotFoundException {
+    public String addPlayer(@RequestBody RegisterRequest registerRequest) throws FileNotFoundException {
 
-        PlayerList list = dataService.getPlayersList();
-        List<Player> data = list.getData();
 
-        int maxId = 0;
-        for (Player player : data) {
-            if (player.getId() > maxId) {
-                maxId = player.getId();
-            }
-        }
-
-        maxId++;
         if (registerRequest.getPassword().equals(registerRequest.getRepeatPassword())) {
-            dataService.addUser(registerRequest, maxId);
+            dataService.addUser(registerRequest);
+            return ErrorForm.successForm("Player registered successfully");
         } else {
             return ErrorForm.errorForm("Passwords are not matching", "register.html");
         }
 
         // #TODO move to config
-        list.getData().add(new Player(maxId, registerRequest.getUsername(), 500));
-        list.setNumberOfPlayers(list.getData().size());
-        dataService.savePlayersList(list);
-        Capser.restart();
 
-        return ErrorForm.successForm("Player registered successfully");
     }
 
     @GetMapping("/players")
     public String getPlayers() throws FileNotFoundException {
 
-        PlayerList list = dataService.getPlayersList();
-        List<Player> data = list.getData();
-        Collections.sort(data);
-        data = data.stream().filter(i -> i.getGamesPlayed()+1 > Config.getPlacementMatchesNumber()).collect(Collectors.toList());
+        List<Player> list = dataService.getPlayersList();
+
+        Collections.sort(list);
+        list = list.stream().filter(i -> i.getGamesPlayed() + 1 > Config.getPlacementMatchesNumber()).collect(Collectors.toList());
 
 
         StringBuilder transformedData = new StringBuilder();
         int standing = 1;
 
         transformedData.append("<div id=\"top_line\"><h3><pre>Standing       Id       Name                            Points \n</pre></h3></div>");
-        for (Player player : data) {
+        for (Player player : list) {
             transformedData.append(String.format("<div><pre>%-3d               %-3d       %-30s        %5f \n</div>"
-                    , standing, player.getId(), player.getName(), player.getPoints()).replace(",","."));
+                    , standing, player.getId(), player.getName(), player.getPoints()).replace(",", "."));
             standing++;
         }
 
@@ -81,20 +64,18 @@ public class GameController {
     }
 
     @PostMapping(value = "/log")
-    public String addGame(@ModelAttribute GameRequest gameRequest) throws FileNotFoundException {
-        int playerId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
-        int opponentId = gameRequest.getOpponentId();
+    public String addGame(@RequestBody GameRequest gameRequest) throws FileNotFoundException {
+        Long playerId = dataService.findPlayerByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).getId();
+        Long opponentId = (long) gameRequest.getOpponentId();
         GameType gameType = gameRequest.getGameType();
         int playerScore = gameRequest.getPlayerScore();
         int opponentScore = gameRequest.getOpponentScore();
         int playerSinks = gameRequest.getPlayerSinks();
         int opponentSinks = gameRequest.getOpponentSinks();
 
-        dataService.makePlayersListBackup(dataService.getPlayersList());
-
 
         if (playerId > opponentId) {
-            int tempId = playerId;
+            Long tempId = playerId;
             playerId = opponentId;
             opponentId = tempId;
 
@@ -115,8 +96,7 @@ public class GameController {
             return ErrorForm.errorForm("Game must end with one of the players obtaining 11 points", "/gamePost.html");
         }
 
-        GamesList list = dataService.getGamesList();
-        List<Game> data = list.getData();
+        List<Game> list = dataService.getGamesList();
         if (gameType == null) {
             if (opponentScore > 11 || playerScore > 11) {
                 gameType = GameType.OVERTIME;
@@ -130,7 +110,11 @@ public class GameController {
         } else if (gameType == GameType.SUDDEN_DEATH && (opponentScore != 11 && playerScore != 11)) {
             return ErrorForm.errorForm("Sudden death game must finish with 11 points", "/gamePost.html");
         }
-        int winner;
+
+        if (opponentId == playerId) {
+            return ErrorForm.errorForm("Cannot post game against yourself", "/gamePost.html");
+        }
+        Long winner;
 
         boolean d;
         if (playerScore > opponentScore) {
@@ -142,9 +126,7 @@ public class GameController {
         }
 
         Game game = new Game(playerId, opponentId, gameType, playerScore, opponentScore, playerSinks, opponentSinks, winner);
-        list.getData().add(game);
-        list.setNumberOfGames(list.getData().size());
-        dataService.saveGamesList(list);
+        dataService.saveGame(game);
 
         Player player1 = dataService.findPlayerById(playerId);
         Player player2 = dataService.findPlayerById(opponentId);
@@ -154,18 +136,11 @@ public class GameController {
 
         List<Player> updatedList = EloRating.calculate(listToPass, 30, d);
 
-        PlayerList listToModify = dataService.getPlayersList();
-        List<Player> playersToModify = listToModify.getData();
-        for (Player player : playersToModify) {
-            if (player.getId() == updatedList.get(0).getId()) {
-                player.setPoints(updatedList.get(0).getPoints());
-                updatePlayer(player);
-            } else if (player.getId() == updatedList.get(1).getId()) {
-                player.setPoints(updatedList.get(1).getPoints());
-                updatePlayer(player);
-            }
+        assert updatedList != null;
+        for (Player player : updatedList) {
+            updatePlayer(player);
+            dataService.savePlayer(player);
         }
-        dataService.savePlayersList(listToModify);
         return ErrorForm.successForm("Game saved successfully");
 
     }
@@ -181,17 +156,24 @@ public class GameController {
         int totalSinksLost = 0;
 
         for (Game game : games) {
-            totalPointsMade += game.getPlayerScore();
-            totalPointsLost += game.getOpponentScore();
-            totalSinksMade += game.getPlayerSinks();
-            totalSinksLost += game.getOpponentSinks();
+            if (game.getPlayerId().equals(player.getId())) {
+                totalPointsMade += game.getPlayerScore();
+                totalPointsLost += game.getOpponentScore();
+                totalSinksMade += game.getPlayerSinks();
+                totalSinksLost += game.getOpponentSinks();
+            } else {
+                totalPointsMade += game.getOpponentScore();
+                totalPointsLost += game.getPlayerScore();
+                totalSinksMade += game.getOpponentSinks();
+                totalSinksLost += game.getPlayerSinks();
+            }
 
-            if (game.getPlayerId() == player.getId()) {
+            if (game.getPlayerId().equals(player.getId())) {
                 averageRebottles += game.getPlayerRebottles();
             } else {
                 averageRebottles += game.getOpponentRebottles();
             }
-            if (game.getWinner() == player.getId()) {
+            if (game.getWinner().equals(player.getId())) {
                 gamesWon++;
             } else {
                 gamesLost++;
@@ -230,35 +212,34 @@ public class GameController {
 
 
     @GetMapping("/games")
-    public String getGames(@RequestParam(required = false) Integer id, @RequestParam(required = false) SortType sortBy) throws FileNotFoundException {
+    public String getGames(@RequestParam(required = false) Long id, @RequestParam(required = false) SortType sortBy) throws FileNotFoundException {
 
-        GamesList list = dataService.getGamesList();
-        List<Game> data = list.getData();
+        List<Game> list = dataService.getGamesList();
 
         StringBuilder transformedData = new StringBuilder();
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         transformedData.append("<div id=\"games_top\"><pre>Players                                Score        Sinks      Rebuttals     Winner          Game Type        Game Time\n </div><pre>");
-        Collections.sort(data);
+        Collections.sort(list);
 
-        for (Game game : data) {
-            if(id != null)
-            {
-                if(game.getPlayerId() != id && game.getOpponentId() != id){
+        for (Game game : list) {
+            if (id != null) {
+                if (game.getPlayerId() != id && game.getOpponentId() != id) {
                     continue;
                 }
             }
-            String playerName = dataService.getPlayerName(game.getPlayerId());
-            String opponent = dataService.getPlayerName(game.getOpponentId());
+            String playerName = dataService.findPlayerById(game.getPlayerId()).getName();
+            String opponentName = dataService.findPlayerById(game.getOpponentId()).getName();
+            String winnerName = dataService.findPlayerById(game.getWinner()).getName();
             transformedData.append(String.format("<div><pre>%-15s vs %15s     %-2d : %2d      %-2d : %2d    %-2d : %2d       %-15s %-12s   %30s \n" + "</pre></div>",
-                    dataService.getPlayerName(game.getPlayerId()),
-                    dataService.getPlayerName(game.getOpponentId()),
+                    playerName,
+                    opponentName,
                     game.getPlayerScore(),
                     game.getOpponentScore(),
                     game.getPlayerSinks(),
                     game.getOpponentSinks(),
                     game.getPlayerRebottles(),
                     game.getOpponentRebottles(),
-                    dataService.getPlayerName(game.getWinner()),
+                    winnerName,
                     game.getGameType(),
                     game.getGameDate()));
         }
@@ -272,56 +253,54 @@ public class GameController {
     }
 
     @GetMapping("/stats")
-    public String getPlayerStats(@RequestParam(required = false, name = "id") String id) {
-        try {
-            Player player = dataService.findPlayerById(
-                    Integer.parseInt(StringUtils.isEmpty(id) ?
-                            SecurityContextHolder.getContext().getAuthentication().getName() : id));
+    public String getPlayerStats(@RequestParam(required = false, name = "id") Long id) {
 
-            StringBuilder transformedData = new StringBuilder();
-            transformedData.append("<div id=\"statistics_top\"><pre><h3>Player Statistics</h3></div>");
-            transformedData.append("<div><pre>Name                                " + player.getName() + "</div>");
-            transformedData.append("<div><pre>Id                                  " + player.getId() + "</div>");
-            transformedData.append("<div><pre>Points                              " + player.getPoints() + "</div>");
-            transformedData.append("<div><pre>Games played                        " + player.getGamesPlayed() + "</div>");
-            transformedData.append("<div><pre>Games won                           " + player.getGamesWon() + "</div>");
-            transformedData.append("<div><pre>Games lost                          " + player.getGamesLost() + "</div>");
-            transformedData.append("<div><pre>Win/Loss Ratio                      " + player.getWinLossRatio() + "</div>");
-            transformedData.append("<div><pre>Average Rebuttals:                  " + player.getAverageRebottles() + "</div>");
-            transformedData.append("<div><pre>Total points made:                  " + player.getTotalPointsMade() + "</div>");
-            transformedData.append("<div><pre>Total points lost:                  " + player.getTotalPointsLost() + "</div>");
-            transformedData.append("<div><pre>Total sinks made:                   " + player.getTotalSinksMade() + "</div>");
-            transformedData.append("<div><pre>Total sinks lost:                   " + player.getTotalSinksLost() + "</div>");
-            transformedData.append("<div><pre>Sinks made to lost ratio:           " + player.getSinksMadeToLostRatio() + "</div>");
+        Player player = dataService.findPlayerById(
+                id == null ?
+                        dataService.findPlayerByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).getId() : id);
 
 
-            return transformedData.toString();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+        StringBuilder transformedData = new StringBuilder();
+        transformedData.append("<div id=\"statistics_top\"><pre><h3>Player Statistics</h3></div>");
+        transformedData.append("<div><pre>Name                                " + player.getName() + "</div>");
+        transformedData.append("<div><pre>Id                                  " + player.getId() + "</div>");
+        transformedData.append("<div><pre>Points                              " + player.getPoints() + "</div>");
+        transformedData.append("<div><pre>Games played                        " + player.getGamesPlayed() + "</div>");
+        transformedData.append("<div><pre>Games won                           " + player.getGamesWon() + "</div>");
+        transformedData.append("<div><pre>Games lost                          " + player.getGamesLost() + "</div>");
+        transformedData.append("<div><pre>Win/Loss Ratio                      " + player.getWinLossRatio() + "</div>");
+        transformedData.append("<div><pre>Average Rebuttals:                  " + player.getAverageRebottles() + "</div>");
+        transformedData.append("<div><pre>Total points made:                  " + player.getTotalPointsMade() + "</div>");
+        transformedData.append("<div><pre>Total points lost:                  " + player.getTotalPointsLost() + "</div>");
+        transformedData.append("<div><pre>Total sinks made:                   " + player.getTotalSinksMade() + "</div>");
+        transformedData.append("<div><pre>Total sinks lost:                   " + player.getTotalSinksLost() + "</div>");
+        transformedData.append("<div><pre>Sinks made to lost ratio:           " + player.getSinksMadeToLostRatio() + "</div>");
+
+
+        return transformedData.toString();
+
     }
 
     @GetMapping("/playerIdsAndNames")
-    public String getPlayerIdsAndNames(@RequestParam(required = false) String type){
+    public String getPlayerIdsAndNames(@RequestParam(required = false) String type) {
         try {
-            if(type!=null && type.equals("id")){
-                PlayerList playerList = dataService.getPlayersList();
+            if (type != null && type.equals("id")) {
+                List<Player> playerList = dataService.getPlayersList();
                 StringBuilder data = new StringBuilder();
                 data.append("<select name=\"id\">");
                 data.append("<option value=\"0\">Select</option>");
-                playerList.getData().stream()
+                playerList.stream()
                         .forEach(p -> data.append("<option value=\"" + p.getId() + "\">" + p.getName() + "</option>"));
                 data.append("</select>");
 
                 return data.toString();
             }
-            PlayerList playerList = dataService.getPlayersList();
+            List<Player> playerList = dataService.getPlayersList();
             StringBuilder data = new StringBuilder();
             data.append("<select name=\"opponentId\">");
             data.append("<option value=\"0\">Select</option>");
 
-            playerList.getData().stream()
+            playerList.stream()
                     .forEach(p -> data.append("<option value=\"" + p.getId() + "\">" + p.getName() + "</option>"));
             data.append("</select>");
 
