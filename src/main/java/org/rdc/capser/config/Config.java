@@ -15,6 +15,6 @@ public class Config {
     }
 
     public static boolean cloud() {
-        return true;
+        return false;
     }
 }

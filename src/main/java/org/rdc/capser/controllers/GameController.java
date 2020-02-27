@@ -96,7 +96,6 @@ public class GameController {
             return ErrorForm.errorForm("Game must end with one of the players obtaining 11 points", "/gamePost.html");
         }
 
-        List<Game> list = dataService.getGamesList();
         if (gameType == null) {
             if (opponentScore > 11 || playerScore > 11) {
                 gameType = GameType.OVERTIME;
@@ -125,8 +124,6 @@ public class GameController {
             winner = opponentId;
         }
 
-        Game game = new Game(playerId, opponentId, gameType, playerScore, opponentScore, playerSinks, opponentSinks, winner);
-        dataService.saveGame(game);
 
         Player player1 = dataService.findPlayerById(playerId);
         Player player2 = dataService.findPlayerById(opponentId);
@@ -134,13 +131,30 @@ public class GameController {
         listToPass.add(player1);
         listToPass.add(player2);
 
+        Float playerPreviousRating = player1.getPoints();
+        Float opponentPreviousRating = player2.getPoints();
+
         List<Player> updatedList = EloRating.calculate(listToPass, 30, d);
 
+
+        Float playerPointsChange = 0f;
+        Float opponentPointsChange = 0f;
+
+        Game game = new Game(playerId, opponentId, gameType, playerScore, opponentScore, playerSinks, opponentSinks, winner, 0f, 0f);
         assert updatedList != null;
         for (Player player : updatedList) {
             updatePlayer(player);
             dataService.savePlayer(player);
+            if (player.getId().equals(playerId)) {
+                game.setPlayerPointsChange(player.getPoints() - playerPreviousRating);
+            }
+            if (player.getId().equals(opponentId)) {
+                game.setOpponentPointsChange(player.getPoints() - opponentPreviousRating);
+            }
         }
+
+
+        dataService.saveGame(game);
         return ErrorForm.successForm("Game saved successfully");
 
     }

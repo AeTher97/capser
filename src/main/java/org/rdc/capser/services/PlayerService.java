@@ -18,4 +18,12 @@ public class PlayerService {
     public Page<Player> getPlayers(Pageable pageable) {
         return playersRepository.findAll(pageable);
     }
+
+    public String getPlayerName(Long id) {
+        return playersRepository.findPlayerById(id).getName();
+    }
+
+    public Long getIdFromName(String name) {
+        return playersRepository.findPlayerByName(name).getId();
+    }
 }

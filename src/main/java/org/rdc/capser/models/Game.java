@@ -29,6 +29,8 @@ public class Game implements Comparable<Game> {
     private int opponentScore;
     private int playerSinks;
     private int opponentSinks;
+    private Float playerPointsChange;
+    private Float opponentPointsChange;
 
     public Game(Long playerId,
                 Long opponentId,
@@ -37,7 +39,9 @@ public class Game implements Comparable<Game> {
                 int opponentScore,
                 int playerSinks,
                 int opponentSinks,
-                Long winnerId) {
+                Long winnerId,
+                Float playerPointsChange,
+                Float opponentPointsChange) {
         this.playerId = playerId;
         this.opponentId = opponentId;
         this.gameType = gameType;
@@ -47,6 +51,9 @@ public class Game implements Comparable<Game> {
         this.playerSinks = playerSinks;
         this.winner = winnerId;
         this.gameDate = new Date();
+        this.playerPointsChange = playerPointsChange;
+        this.opponentPointsChange = opponentPointsChange;
+
         this.playerRebottles = getOpponentSinks() - opponentScore;
         this.opponentRebottles = getPlayerSinks() - playerScore;
         if (this.playerRebottles < 0) {
@@ -56,6 +63,7 @@ public class Game implements Comparable<Game> {
             this.opponentRebottles = 0;
         }
     }
+
     private int playerRebottles;
     private int opponentRebottles;
 

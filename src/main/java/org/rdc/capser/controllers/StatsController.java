@@ -1,8 +1,12 @@
 package org.rdc.capser.controllers;
 
+import org.rdc.capser.models.Game;
+import org.rdc.capser.models.response.GameResponse;
 import org.rdc.capser.services.GameService;
 import org.rdc.capser.services.PlayerService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,15 +28,34 @@ public class StatsController {
 
     @GetMapping("/games")
     public ResponseEntity<Object> getGames(@RequestParam Integer pageNumber, @RequestParam Integer pageSize) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
-        return new ResponseEntity<>(gameService.getGames(pageRequest), HttpStatus.OK);
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("gameDate").descending());
+        Page<Game> games = gameService.getGames(pageRequest);
+
+        Page<GameResponse> gamesResponse = games.map(game -> {
+            String playerName = playerService.getPlayerName(game.getPlayerId());
+            String opponentName = playerService.getPlayerName(game.getOpponentId());
+            GameResponse gameResponse = new GameResponse(game);
+            gameResponse.setOpponentName(opponentName);
+            gameResponse.setPlayerName(playerName);
+            if (game.getWinner().
+
+                    equals(game.getPlayerId())) {
+                gameResponse.setWinner(playerName);
+            } else {
+                gameResponse.setWinner(opponentName);
+            }
+
+            return gameResponse;
+        });
+
+        return new ResponseEntity<>(gamesResponse, HttpStatus.OK);
     }
 
     @GetMapping("/players")
     public ResponseEntity<Object> getPlayers(@RequestParam Integer pageNumber, @RequestParam Integer pageSize) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
-        return new ResponseEntity<>(playerService.getPlayers(pageRequest), HttpStatus.OK);
 
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("points").descending());
+        return new ResponseEntity<>(playerService.getPlayers(pageRequest), HttpStatus.OK);
     }
 
 }

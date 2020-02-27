@@ -27,6 +27,7 @@ public class Player implements Comparable<Player> {
     private int totalSinksMade;
     private int totalSinksLost;
     private float sinksMadeToLostRatio;
+    private boolean nakedLap;
 
     public Player() {
     }
