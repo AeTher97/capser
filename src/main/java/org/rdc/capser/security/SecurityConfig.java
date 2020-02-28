@@ -5,12 +5,16 @@ import org.rdc.capser.security.handler.CustomAuthenticationSuccessHandler;
 import org.rdc.capser.services.PlayerService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -55,15 +59,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/login.html")
+//                .loginPage("/login.html")
                 .loginProcessingUrl("/perform/login")
+
                 .defaultSuccessUrl("/index.html", true)
                 .successHandler(new CustomAuthenticationSuccessHandler(playerService))
                 .failureHandler(new CustomAuthenticationFailureHandler())
                 .and()
+
                 .logout()
                 .logoutUrl("/perform/logout")
-                .deleteCookies("JSESSIONID");
+                .deleteCookies("JSESSIONID")
+                .and()
+                .exceptionHandling()
+                .defaultAuthenticationEntryPointFor(getRestAuthenticationEntryPoint(), new AntPathRequestMatcher("/stats/**"));
+        ;
     }
 
     private UrlBasedCorsConfigurationSource corsFilter() {
@@ -78,6 +88,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         config.addAllowedMethod("DELETE");
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    private AuthenticationEntryPoint getRestAuthenticationEntryPoint() {
+        return new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
     }
 
 
