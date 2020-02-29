@@ -1,5 +1,6 @@
 package org.rdc.capser.controllers;
 
+import org.rdc.capser.config.Config;
 import org.rdc.capser.models.Game;
 import org.rdc.capser.models.response.GameResponse;
 import org.rdc.capser.services.GameService;
@@ -26,10 +27,24 @@ public class StatsController {
         this.playerService = playerService;
     }
 
+
     @GetMapping("/games")
-    public ResponseEntity<Object> getGames(@RequestParam Integer pageNumber, @RequestParam Integer pageSize) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("gameDate").descending());
-        Page<Game> games = gameService.getGames(pageRequest);
+    public ResponseEntity<Object> getGames(@RequestParam Integer pageNumber, @RequestParam Integer pageSize, @RequestParam(required = false) Long id) {
+
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("gameDate").descending().and(Sort.by("id").and(Sort.by("id"))));
+
+        Page<Game> games = null;
+
+        if (id == null) {
+            games = gameService.getGames(pageRequest);
+        } else {
+            games = gameService.getPlayerGames(pageRequest, id);
+
+        }
+
+        if (games.getSize() == 0) {
+            return new ResponseEntity<>(games, HttpStatus.OK);
+        }
 
         Page<GameResponse> gamesResponse = games.map(game -> {
             String playerName = playerService.getPlayerName(game.getPlayerId());
@@ -54,8 +69,25 @@ public class StatsController {
     @GetMapping("/players")
     public ResponseEntity<Object> getPlayers(@RequestParam Integer pageNumber, @RequestParam Integer pageSize) {
 
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("points").descending());
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("points").descending().and(Sort.by("name").and(Sort.by("id"))));
         return new ResponseEntity<>(playerService.getPlayers(pageRequest), HttpStatus.OK);
     }
+
+    @GetMapping("/all/players")
+    public ResponseEntity<Object> getAllPlayers() {
+
+        return new ResponseEntity<>(playerService.getAllPlayers(), HttpStatus.OK);
+    }
+
+    @GetMapping("/player")
+    public ResponseEntity<Object> getPlayer(@RequestParam Long id) {
+        return new ResponseEntity<>(playerService.getPlayerById(id), HttpStatus.OK);
+    }
+
+    @GetMapping("/version")
+    public String getVersion() {
+        return "{\"version\":" + +Config.getBuildNumber() + "}";
+    }
+
 
 }

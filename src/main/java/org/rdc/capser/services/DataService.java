@@ -10,7 +10,6 @@ import org.rdc.capser.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 
 @Service
@@ -28,7 +27,7 @@ public class DataService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<Player> getPlayersList() throws FileNotFoundException {
+    public List<Player> getPlayersList() {
 
         return playersRepository.findAll();
     }

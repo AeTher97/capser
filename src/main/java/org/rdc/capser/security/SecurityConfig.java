@@ -43,36 +43,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/anonymous*").anonymous()
-                .antMatchers("/login*").permitAll()
-//                .antMatchers("/stats/*").permitAll()
-                .antMatchers("/index.html").permitAll()
-                .antMatchers("/register").permitAll()
-                .antMatchers("/index.html?").permitAll()
-                .antMatchers("/games.html").permitAll()
-                .antMatchers("/players").permitAll()
-                .antMatchers("/games").permitAll()
-                .antMatchers("/version").permitAll()
-                .antMatchers("/register.html").permitAll()
-                .antMatchers("/capsStyle.css").permitAll()
-                .antMatchers("/commandments.html").permitAll()
-                .antMatchers("/").permitAll()
+                .antMatchers("/*").permitAll()
+                .antMatchers("/static/**").permitAll()
+                .antMatchers("/stats/**").permitAll()
+                .antMatchers("/action/register").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
-//                .loginPage("/login.html")
                 .loginProcessingUrl("/perform/login")
-
                 .defaultSuccessUrl("/index.html", true)
                 .successHandler(new CustomAuthenticationSuccessHandler(playerService))
                 .failureHandler(new CustomAuthenticationFailureHandler())
                 .and()
-
                 .logout()
                 .logoutUrl("/perform/logout")
                 .deleteCookies("JSESSIONID")
                 .and()
                 .exceptionHandling()
-                .defaultAuthenticationEntryPointFor(getRestAuthenticationEntryPoint(), new AntPathRequestMatcher("/stats/**"));
+                .defaultAuthenticationEntryPointFor(getRestAuthenticationEntryPoint(), new AntPathRequestMatcher("/*/*"));
         ;
     }
 

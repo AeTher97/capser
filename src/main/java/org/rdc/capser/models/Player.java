@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 @Table(name = "players")
 @Data
@@ -28,6 +29,10 @@ public class Player implements Comparable<Player> {
     private int totalSinksLost;
     private float sinksMadeToLostRatio;
     private boolean nakedLap;
+    private int nakedLapCount;
+
+    private Date lastSeen;
+    private Date lastGame;
 
     public Player() {
     }

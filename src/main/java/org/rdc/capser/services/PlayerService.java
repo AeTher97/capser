@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PlayerService {
 
@@ -19,6 +21,10 @@ public class PlayerService {
         return playersRepository.findAll(pageable);
     }
 
+    public List<Player> getAllPlayers() {
+        return playersRepository.findAll();
+    }
+
     public String getPlayerName(Long id) {
         return playersRepository.findPlayerById(id).getName();
     }
@@ -26,4 +32,13 @@ public class PlayerService {
     public Long getIdFromName(String name) {
         return playersRepository.findPlayerByName(name).getId();
     }
+
+    public Player getPlayerById(Long id) {
+        return playersRepository.findPlayerById(id);
+    }
+
+    public void savePlayer(Player player) {
+        playersRepository.save(player);
+    }
+
 }
