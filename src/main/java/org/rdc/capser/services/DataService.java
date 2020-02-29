@@ -1,171 +1,74 @@
 package org.rdc.capser.services;
 
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
-import org.rdc.capser.models.*;
+import org.rdc.capser.models.Creds;
+import org.rdc.capser.models.Game;
+import org.rdc.capser.models.Player;
+import org.rdc.capser.models.RegisterRequest;
+import org.rdc.capser.repositories.GamesRepository;
+import org.rdc.capser.repositories.PlayersRepository;
+import org.rdc.capser.repositories.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.sql.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class DataService {
 
-    private final String EXTENSION = ".txt";
-    private final String PLAYERS_LIST_PATH = "D:/ServerDataDev/players";
-    private final String GAMES_LIST_PATH = "D:/ServerDataDev/games.txt";
-    private final String CREDS_PATH = "D:/ServerDataDev/creds.txt";
+    private UserRepository userRepository;
+    private PlayersRepository playersRepository;
+    private GamesRepository gamesRepository;
+    private PasswordEncoder passwordEncoder;
 
-
-    public PlayerList getPlayersList() throws FileNotFoundException {
-
-        try {
-            Gson gson = new Gson();
-            JsonReader reader = new JsonReader(new FileReader(PLAYERS_LIST_PATH + EXTENSION));
-            if (gson.fromJson(reader, PlayerList.class) == null) {
-                PlayerList playerList = new PlayerList();
-                playerList.setData(new ArrayList<Player>());
-                playerList.setNumberOfPlayers(0);
-                return playerList;
-            }
-
-            reader.close();
-            JsonReader reader2 = new JsonReader(new FileReader(PLAYERS_LIST_PATH + EXTENSION));
-
-            PlayerList result = gson.fromJson(reader2, PlayerList.class);
-            reader2.close();
-            return result;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public DataService(UserRepository userRepository, PlayersRepository playersRepository, GamesRepository gamesRepository, PasswordEncoder passwordEncoder) {
+        this.gamesRepository = gamesRepository;
+        this.userRepository = userRepository;
+        this.playersRepository = playersRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public void savePlayersList(PlayerList playerList) throws FileNotFoundException {
+    public List<Player> getPlayersList() {
 
-        PrintWriter out = new PrintWriter(PLAYERS_LIST_PATH + EXTENSION);
-        Gson gson = new Gson();
-        out.print(gson.toJson(playerList));
-        out.close();
+        return playersRepository.findAll();
+    }
+
+    public void savePlayer(Player player) {
+
+        playersRepository.save(player);
 
     }
 
-    public void makePlayersListBackup(PlayerList playerList) throws FileNotFoundException {
-        try {
-            DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
-            java.io.File file = new File((PLAYERS_LIST_PATH + "Backup_" + dateFormat.format(Date.from(Instant.now())) + EXTENSION));
-            boolean success = file.createNewFile();
-            if (success) {
-                PrintWriter out = new PrintWriter(PLAYERS_LIST_PATH + "Backup_" + dateFormat.format(Date.from(Instant.now())) + EXTENSION);
-                Gson gson = new Gson();
-                out.print(gson.toJson(playerList));
-                out.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+    public List<Game> getGamesList() {
+        return gamesRepository.findAll();
+    }
+
+    public void saveGame(Game game) {
+        gamesRepository.save(game);
+    }
+
+    public void addUser(RegisterRequest registerRequest) {
+        Creds user = new Creds(registerRequest.getUsername(), passwordEncoder.encode(registerRequest.getPassword()));
+        Player player = new Player(registerRequest.getUsername(), 500);
+        playersRepository.save(player);
+        userRepository.save(user);
     }
 
 
-    public GamesList getGamesList() throws FileNotFoundException {
-        try {
-            Gson gson = new Gson();
-            JsonReader reader = new JsonReader(new FileReader(GAMES_LIST_PATH));
-            if (gson.fromJson(reader, GamesList.class) == null) {
-                GamesList gamesList = new GamesList();
-                gamesList.setData(new ArrayList<Game>());
-                gamesList.setNumberOfGames(0);
-                reader.close();
-                return gamesList;
-            }
-            reader.close();
-            JsonReader reader2 = new JsonReader(new FileReader(GAMES_LIST_PATH));
-
-            GamesList result = gson.fromJson(reader2, GamesList.class);
-            reader2.close();
-            return result;
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        }
-
-        return null;
+    public Player findPlayerById(Long id) {
+        return playersRepository.findPlayerById(id);
     }
 
-    public void saveGamesList(GamesList gamesList) throws FileNotFoundException {
-        PrintWriter out = new PrintWriter(GAMES_LIST_PATH);
-        Gson gson = new Gson();
-        out.print(gson.toJson(gamesList));
-        out.close();
+    public Player findPlayerByUsername(String username) {
+        return playersRepository.findPlayerByName(username);
     }
 
-    public void addUser(RegisterRequest registerRequest, int id) {
-        try {
-            Gson gson = new Gson();
-            JsonReader reader2 = new JsonReader(new FileReader(CREDS_PATH));
-
-            CredsList result = gson.fromJson(reader2, CredsList.class);
-            reader2.close();
-            result.getData().add(new Creds(id, registerRequest.getPassword()));
-
-            PrintWriter out = new PrintWriter(CREDS_PATH);
-            out.print(gson.toJson(result));
-            out.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        }
+    public List<Game> getPlayerGames(Long playerId) {
+        return gamesRepository.findAllByPlayerIdOrOpponentId(playerId, playerId);
     }
 
-    public String getPlayerName(int id) {
-        try {
-            PlayerList list = getPlayersList();
-            List<Player> players = list.getData();
-
-            for (Player player : players) {
-                if (player.getId() == id) {
-                    return player.getName();
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public Player findPlayerById(int id) throws FileNotFoundException {
-        for (Player player : getPlayersList().getData()) {
-            if (player.getId() == id) {
-                return player;
-            }
-
-        }
-        return null;
-    }
-
-    public List<Game> getPlayerGames(int playerId) {
-        try {
-            GamesList list = getGamesList();
-            List<Game> result = new ArrayList<>();
-            List<Game> data = list.getData();
-            for (Game game : data) {
-                if (game.getPlayerId() == playerId || game.getOpponentId() == playerId) {
-                    result.add(game);
-                }
-            }
-
-            return result;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+    public List<Game> getOpponentGames(Long opponentId) {
+        return gamesRepository.findAllByOpponentId(opponentId);
     }
 
 }
