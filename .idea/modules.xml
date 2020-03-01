@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/capser_dev.iml" filepath="$PROJECT_DIR$/.idea/capser_dev.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../capser_front/.idea/capser_front.iml" filepath="$PROJECT_DIR$/../capser_front/.idea/capser_front.iml" />
     </modules>
   </component>
 </project>
