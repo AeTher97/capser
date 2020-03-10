@@ -13,7 +13,7 @@ after that cd into **/target** folder and execute:
 ~~~~
 java -jar capser-1.0-SNAPSHOT.jar
 ~~~~
-Server will run on localhost:8080.
+Server will run on **localhost:8080**.
 
 To run postgreSQL database is required with credentials **postgres:postgres** and database **capser** on port **5432** (you can change that in settings). You can download postgres [here](https://www.postgresql.org/download/).
 
