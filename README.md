@@ -2,7 +2,7 @@
 Elo caps server and frontend for playing caps games. 
 
 ## Frontend development
-Actual development fronend files are stored in repository capser_frontend. This repository only contains production ready frontend files.
+Actual development fronend files are stored in repository capser_frontend. This repository only contains production ready frontend files. Fronted source files are available [here](https://github.com/AeTher97/capser_front).
 
 ## How to run
 Install maven from [here](https://maven.apache.org/download.cgi), make sure that maven executable is added to PATH. After that cd into repository folder and run:
