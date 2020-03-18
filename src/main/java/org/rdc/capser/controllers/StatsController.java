@@ -1,8 +1,8 @@
 package org.rdc.capser.controllers;
 
-import org.rdc.capser.config.Config;
 import org.rdc.capser.models.Game;
 import org.rdc.capser.models.response.GameResponse;
+import org.rdc.capser.services.DataService;
 import org.rdc.capser.services.GameService;
 import org.rdc.capser.services.PlayerService;
 import org.springframework.data.domain.Page;
@@ -21,12 +21,13 @@ public class StatsController {
 
     private final GameService gameService;
     private final PlayerService playerService;
+    private final DataService dataService;
 
-    public StatsController(GameService gameService, PlayerService playerService) {
+    public StatsController(GameService gameService, PlayerService playerService, DataService dataService) {
         this.gameService = gameService;
         this.playerService = playerService;
+        this.dataService = dataService;
     }
-
 
     @GetMapping("/games")
     public ResponseEntity<Object> getGames(@RequestParam Integer pageNumber, @RequestParam Integer pageSize, @RequestParam(required = false) Long id) {
@@ -86,7 +87,7 @@ public class StatsController {
 
     @GetMapping("/version")
     public String getVersion() {
-        return "{\"version\":" + +Config.getBuildNumber() + "}";
+        return "{\"version\":" + +dataService.getCapserVersion() + "}";
     }
 
 

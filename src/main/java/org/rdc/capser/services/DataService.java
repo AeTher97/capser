@@ -1,5 +1,6 @@
 package org.rdc.capser.services;
 
+import org.rdc.capser.configuration.CapserConfigurationProperties;
 import org.rdc.capser.models.Creds;
 import org.rdc.capser.models.Game;
 import org.rdc.capser.models.Player;
@@ -7,23 +8,29 @@ import org.rdc.capser.models.RegisterRequest;
 import org.rdc.capser.repositories.GamesRepository;
 import org.rdc.capser.repositories.PlayersRepository;
 import org.rdc.capser.repositories.UserRepository;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
 import java.util.List;
 
 @Service
+@EnableConfigurationProperties(CapserConfigurationProperties.class)
 public class DataService {
 
+
+    private CapserConfigurationProperties capserConfigurationProperties;
     private UserRepository userRepository;
     private PlayersRepository playersRepository;
     private GamesRepository gamesRepository;
     private PasswordEncoder passwordEncoder;
 
-    public DataService(UserRepository userRepository, PlayersRepository playersRepository, GamesRepository gamesRepository, PasswordEncoder passwordEncoder) {
-        this.gamesRepository = gamesRepository;
+    public DataService(CapserConfigurationProperties capserConfigurationProperties, UserRepository userRepository, PlayersRepository playersRepository, GamesRepository gamesRepository, PasswordEncoder passwordEncoder) {
+        this.capserConfigurationProperties = capserConfigurationProperties;
         this.userRepository = userRepository;
         this.playersRepository = playersRepository;
+        this.gamesRepository = gamesRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -48,10 +55,14 @@ public class DataService {
     }
 
     public void addUser(RegisterRequest registerRequest) {
-        Creds user = new Creds(registerRequest.getUsername(), passwordEncoder.encode(registerRequest.getPassword()));
-        Player player = new Player(registerRequest.getUsername(), 500);
-        playersRepository.save(player);
-        userRepository.save(user);
+        if (playersRepository.findPlayerByName(registerRequest.getUsername()) != null) {
+            Creds user = new Creds(registerRequest.getUsername(), passwordEncoder.encode(registerRequest.getPassword()));
+            Player player = new Player(registerRequest.getUsername(), 500);
+            playersRepository.save(player);
+            userRepository.save(user);
+        } else {
+            throw new KeyAlreadyExistsException("User with that name alread exists");
+        }
     }
 
 
@@ -69,6 +80,10 @@ public class DataService {
 
     public List<Game> getOpponentGames(Long opponentId) {
         return gamesRepository.findAllByOpponentId(opponentId);
+    }
+
+    public float getCapserVersion() {
+        return capserConfigurationProperties.getBuildNumber();
     }
 
 }

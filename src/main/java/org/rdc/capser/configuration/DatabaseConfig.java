@@ -11,8 +11,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @Configuration
-@ConditionalOnProperty(value = "cloud", havingValue = "true")
+@ConditionalOnProperty(value = "capser.cloud", havingValue = "true")
 public class DatabaseConfig {
+
 
     @Bean
     public DataSource dataSource() throws URISyntaxException {

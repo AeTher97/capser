@@ -3,13 +3,15 @@ package org.rdc.capser.controllers;
 import org.rdc.capser.models.*;
 import org.rdc.capser.services.DataService;
 import org.rdc.capser.utilities.EloRating;
-import org.rdc.capser.utilities.ErrorForm;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityExistsException;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,22 +28,24 @@ public class GameController {
     }
 
     @PostMapping("/register")
-    public String addPlayer(@RequestBody RegisterRequest registerRequest) throws FileNotFoundException {
+    public ResponseEntity<Object> addPlayer(@RequestBody RegisterRequest registerRequest) throws FileNotFoundException {
 
 
-        if (registerRequest.getPassword().equals(registerRequest.getRepeatPassword())) {
-            dataService.addUser(registerRequest);
-            return ErrorForm.successForm("Player registered successfully");
-        } else {
-            return ErrorForm.errorForm("Passwords are not matching", "register.html");
+        try {
+            if (registerRequest.getPassword().equals(registerRequest.getRepeatPassword())) {
+                dataService.addUser(registerRequest);
+                return new ResponseEntity<>(new Status("Registered successfully"), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new Status("Error", "Passwords not matching"), HttpStatus.BAD_REQUEST);
+            }
+        } catch (EntityExistsException e) {
+            return new ResponseEntity<>(new Status("Error", "This username is taken"), HttpStatus.BAD_REQUEST);
         }
-
-        // #TODO move to config
 
     }
 
     @PostMapping(value = "/log")
-    public String addGame(@RequestBody GameRequest gameRequest) throws FileNotFoundException {
+    public ResponseEntity<Object> addGame(@RequestBody GameRequest gameRequest) throws FileNotFoundException {
         Long playerId = dataService.findPlayerByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).getId();
         Long opponentId = (long) gameRequest.getOpponentId();
         GameType gameType = gameRequest.getGameType();
@@ -49,6 +53,12 @@ public class GameController {
         int opponentScore = gameRequest.getOpponentScore();
         int playerSinks = gameRequest.getPlayerSinks();
         int opponentSinks = gameRequest.getOpponentSinks();
+
+        Player player1 = dataService.findPlayerById(playerId);
+        Player player2 = dataService.findPlayerById(opponentId);
+        if (player1 == null || player2 == null) {
+            return new ResponseEntity<>(new Status("Error", "This user doesn't exist"), HttpStatus.NOT_FOUND);
+        }
 
 
         if (playerId > opponentId) {
@@ -66,11 +76,11 @@ public class GameController {
         }
 
         if (opponentScore == playerScore) {
-            return ErrorForm.errorForm("Game cannot end in a draw", "/gamePost.html");
+            return new ResponseEntity<>(new Status("Error", "Game cannot end in a draw"), HttpStatus.BAD_REQUEST);
         }
 
         if (opponentScore < 11 && playerScore < 11) {
-            return ErrorForm.errorForm("Game must end with one of the players obtaining 11 points", "/gamePost.html");
+            return new ResponseEntity<>(new Status("Error", "Game must end with one of the players obtaining 11 points"), HttpStatus.BAD_REQUEST);
         }
 
         if (gameType == null) {
@@ -82,13 +92,13 @@ public class GameController {
         }
 
         if (gameType == GameType.OVERTIME && Math.abs(opponentScore - playerScore) != 2) {
-            return ErrorForm.errorForm("Overtime game must finish with 2 points advantage", "/gamePost.html");
+            return new ResponseEntity<>(new Status("Error", "Overtime game must finish with 2 points advantage"), HttpStatus.BAD_REQUEST);
         } else if (gameType == GameType.SUDDEN_DEATH && (opponentScore != 11 && playerScore != 11)) {
-            return ErrorForm.errorForm("Sudden death game must finish with 11 points", "/gamePost.html");
+            return new ResponseEntity<>(new Status("Error", "Sudden death game must finish with 11 points"), HttpStatus.BAD_REQUEST);
         }
 
         if (opponentId.equals(playerId)) {
-            return ErrorForm.errorForm("Cannot post game against yourself", "/gamePost.html");
+            return new ResponseEntity<>(new Status("Error", "Cannot post game against yourself"), HttpStatus.BAD_REQUEST);
         }
         Long winner;
 
@@ -102,8 +112,7 @@ public class GameController {
         }
 
 
-        Player player1 = dataService.findPlayerById(playerId);
-        Player player2 = dataService.findPlayerById(opponentId);
+
         List<Player> listToPass = new ArrayList<>();
         listToPass.add(player1);
         listToPass.add(player2);
@@ -129,7 +138,7 @@ public class GameController {
 
 
         dataService.saveGame(game);
-        return ErrorForm.successForm("Game saved successfully");
+        return new ResponseEntity<>(new Status("Game saved successfully"), HttpStatus.CREATED);
 
     }
 
@@ -184,17 +193,16 @@ public class GameController {
             }
         }
         if (gamesLost != 0) {
-            float winLossRatio = new Float(gamesWon) / new Float(gamesLost);
+            float winLossRatio = (float) gamesWon / (float) gamesLost;
             player.setWinLossRatio(winLossRatio);
 
         } else {
-            float winLossRatio = gamesWon;
-            player.setWinLossRatio(winLossRatio);
+            player.setWinLossRatio((float) gamesWon);
 
         }
 
         if (totalSinksLost != 0) {
-            float sinksMadeToLost = new Float(totalSinksMade) / new Float(totalSinksLost);
+            float sinksMadeToLost = (float) totalSinksMade / (float) totalSinksLost;
             player.setSinksMadeToLostRatio(sinksMadeToLost);
 
         } else {
