@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.EntityExistsException;
+import javax.management.openmbean.KeyAlreadyExistsException;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,8 +38,8 @@ public class GameController {
             } else {
                 return new ResponseEntity<>(new Status("Error", "Passwords not matching"), HttpStatus.BAD_REQUEST);
             }
-        } catch (EntityExistsException e) {
-            return new ResponseEntity<>(new Status("Error", "This username is taken"), HttpStatus.BAD_REQUEST);
+        } catch (KeyAlreadyExistsException e) {
+            return new ResponseEntity<>(new Status("Error", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
 
     }
