@@ -55,7 +55,7 @@ public class DataService {
     }
 
     public void addUser(RegisterRequest registerRequest) {
-        if (playersRepository.findPlayerByName(registerRequest.getUsername()) != null) {
+        if (playersRepository.findPlayerByName(registerRequest.getUsername()) == null) {
             Creds user = new Creds(registerRequest.getUsername(), passwordEncoder.encode(registerRequest.getPassword()));
             Player player = new Player(registerRequest.getUsername(), 500);
             playersRepository.save(player);
